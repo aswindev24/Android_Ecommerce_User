@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { CartItem, Product } from '../types';
 
 interface CartContextType {
@@ -64,9 +64,19 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             // Optionally sync with API
             // await cartService.addToCart(product.id, quantity);
 
-            Alert.alert('Success', `${product.title} added to cart!`);
+            Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: `${product.title} added to cart!`,
+                position: 'bottom'
+            });
         } catch (error: any) {
-            Alert.alert('Error', error.message || 'Failed to add to cart');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: error.message || 'Failed to add to cart',
+                position: 'bottom'
+            });
             throw error;
         } finally {
             setIsLoading(false);
@@ -83,7 +93,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             // Optionally sync with API
             // await cartService.removeFromCart(itemId);
         } catch (error: any) {
-            Alert.alert('Error', error.message || 'Failed to remove from cart');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: error.message || 'Failed to remove from cart',
+                position: 'bottom'
+            });
             throw error;
         } finally {
             setIsLoading(false);
@@ -115,7 +130,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             // Optionally sync with API
             // await cartService.updateCartItem(itemId, quantity);
         } catch (error: any) {
-            Alert.alert('Error', error.message || 'Failed to update quantity');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: error.message || 'Failed to update quantity',
+                position: 'bottom'
+            });
             throw error;
         } finally {
             setIsLoading(false);
@@ -130,7 +150,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             // Optionally sync with API
             // await cartService.clearCart();
         } catch (error: any) {
-            Alert.alert('Error', error.message || 'Failed to clear cart');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: error.message || 'Failed to clear cart',
+                position: 'bottom'
+            });
             throw error;
         } finally {
             setIsLoading(false);

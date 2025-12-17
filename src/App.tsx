@@ -1,4 +1,5 @@
 import React from 'react';
+import Toast from 'react-native-toast-message';
 import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from './context/AuthContext';
@@ -17,6 +18,7 @@ const App: React.FC = () => {
                     <RootNavigator />
                 </CartProvider>
             </AuthProvider>
+            <Toast />
         </GestureHandlerRootView>
     );
 };

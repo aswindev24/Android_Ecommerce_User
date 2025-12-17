@@ -1,7 +1,7 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Toast from 'react-native-toast-message';
 import React, { useState } from 'react';
 import {
-    Alert,
     ScrollView,
     StyleSheet,
     View
@@ -59,11 +59,20 @@ const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
 
         try {
             await updateUser(formData);
-            Alert.alert('Success', 'Profile updated successfully', [
-                { text: 'OK', onPress: () => navigation.goBack() },
-            ]);
+            Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: 'Profile updated successfully',
+                position: 'bottom'
+            });
+            navigation.goBack();
         } catch (error: any) {
-            Alert.alert('Error', error.message || 'Failed to update profile');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: error.message || 'Failed to update profile',
+                position: 'bottom'
+            });
         }
     };
 

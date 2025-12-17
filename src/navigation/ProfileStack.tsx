@@ -25,7 +25,14 @@ const ProfileStack: React.FC = () => {
             <Stack.Screen
                 name="Profile"
                 component={ProfileScreen}
-                options={{ title: 'My Profile' }}
+                options={{
+                    title: 'My Profile',
+                    headerStyle: {
+                        backgroundColor: COLORS.primary,
+                    },
+                    headerTintColor: COLORS.white,
+                    headerTitleAlign: 'center',
+                }}
             />
             <Stack.Screen
                 name="EditProfile"

@@ -8,11 +8,13 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
+    ImageBackground,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/common/Button';
-import Input from '../../components/common/Input';
 import { COLORS, LAYOUT, SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { AuthStackParamList } from '../../types';
@@ -84,99 +86,144 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.keyboardView}
-            >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
+        <ImageBackground
+            source={require('../../../assets/loginbg.jpg')}
+            style={styles.container}
+            resizeMode="cover"
+        >
+            <SafeAreaView style={styles.safeArea}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.keyboardView}
                 >
-                    {/* Header */}
-                    <View style={styles.headerContainer}>
-                        <Text style={styles.title}>Create Account</Text>
-                        <Text style={styles.subtitle}>Sign up to get started</Text>
-                    </View>
-
-                    {/* Form */}
-                    <View style={styles.formContainer}>
-                        <Input
-                            label="Full Name"
-                            placeholder="Enter your full name"
-                            value={formData.name}
-                            onChangeText={(text) => updateField('name', text)}
-                            icon="person-outline"
-                            error={errors.name}
-                            editable={!isLoading}
-                        />
-
-                        <Input
-                            label="Email Address"
-                            placeholder="Enter your email"
-                            value={formData.email}
-                            onChangeText={(text) => updateField('email', text)}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            icon="mail-outline"
-                            error={errors.email}
-                            editable={!isLoading}
-                        />
-
-                        <Input
-                            label="Phone Number"
-                            placeholder="Enter your phone number"
-                            value={formData.phone}
-                            onChangeText={(text) => updateField('phone', text)}
-                            keyboardType="phone-pad"
-                            icon="call-outline"
-                            error={errors.phone}
-                            editable={!isLoading}
-                            maxLength={10}
-                        />
-
-                        <Input
-                            label="Password"
-                            placeholder="Create a password"
-                            value={formData.password}
-                            onChangeText={(text) => updateField('password', text)}
-                            secureTextEntry
-                            icon="lock-closed-outline"
-                            error={errors.password}
-                            editable={!isLoading}
-                        />
-
-                        <Button
-                            title="Sign Up"
-                            onPress={handleRegister}
-                            loading={isLoading}
-                            disabled={isLoading}
-                            fullWidth
-                            style={styles.registerButton}
-                        />
-
-                        {/* Sign In Link */}
-                        <View style={styles.signinContainer}>
-                            <Text style={styles.signinText}>Already have an account? </Text>
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate('Login')}
-                                disabled={isLoading}
-                            >
-                                <Text style={styles.signinLink}>Sign In</Text>
-                            </TouchableOpacity>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        {/* Header */}
+                        <View style={styles.headerContainer}>
+                            <Text style={styles.title}>Create Account</Text>
+                            <Text style={styles.subtitle}>Sign up to get started</Text>
                         </View>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+
+                        {/* Form */}
+                        <View style={styles.formContainer}>
+                            {/* Full Name Input */}
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.inputRow}>
+                                    <Ionicons name="person-outline" size={20} color={COLORS.white} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Full Name"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                                        value={formData.name}
+                                        onChangeText={(text) => updateField('name', text)}
+                                        editable={!isLoading}
+                                    />
+                                </View>
+                                <View style={styles.underline} />
+                                {errors.name && (
+                                    <Text style={styles.errorText}>{errors.name}</Text>
+                                )}
+                            </View>
+
+                            {/* Email Input */}
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.inputRow}>
+                                    <Ionicons name="mail-outline" size={20} color={COLORS.white} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Email Address"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                                        value={formData.email}
+                                        onChangeText={(text) => updateField('email', text)}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                        editable={!isLoading}
+                                    />
+                                </View>
+                                <View style={styles.underline} />
+                                {errors.email && (
+                                    <Text style={styles.errorText}>{errors.email}</Text>
+                                )}
+                            </View>
+
+                            {/* Phone Input */}
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.inputRow}>
+                                    <Ionicons name="call-outline" size={20} color={COLORS.white} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Phone Number"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                                        value={formData.phone}
+                                        onChangeText={(text) => updateField('phone', text)}
+                                        keyboardType="phone-pad"
+                                        maxLength={10}
+                                        editable={!isLoading}
+                                    />
+                                </View>
+                                <View style={styles.underline} />
+                                {errors.phone && (
+                                    <Text style={styles.errorText}>{errors.phone}</Text>
+                                )}
+                            </View>
+
+                            {/* Password Input */}
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.inputRow}>
+                                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.white} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Create a Password"
+                                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                                        value={formData.password}
+                                        onChangeText={(text) => updateField('password', text)}
+                                        secureTextEntry
+                                        editable={!isLoading}
+                                    />
+                                </View>
+                                <View style={styles.underline} />
+                                {errors.password && (
+                                    <Text style={styles.errorText}>{errors.password}</Text>
+                                )}
+                            </View>
+
+                            <Button
+                                title="Sign Up"
+                                onPress={handleRegister}
+                                loading={isLoading}
+                                disabled={isLoading}
+                                fullWidth
+                                style={styles.registerButton}
+                            />
+
+                            {/* Sign In Link */}
+                            <View style={styles.signinContainer}>
+                                <Text style={styles.signinText}>Already have an account? </Text>
+                                <TouchableOpacity
+                                    onPress={() => navigation.navigate('Login')}
+                                    disabled={isLoading}
+                                >
+                                    <Text style={styles.signinLink}>Sign In</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.background,
+    },
+    safeArea: {
+        flex: 1,
+        //backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent overlay
     },
     keyboardView: {
         flex: 1,
@@ -184,7 +231,8 @@ const styles = StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: LAYOUT.screenPadding,
-        paddingVertical: SPACING['2xl'],
+        paddingVertical: SPACING['3xl'],
+        justifyContent: 'center',
     },
     headerContainer: {
         marginBottom: SPACING['2xl'],
@@ -192,18 +240,43 @@ const styles = StyleSheet.create({
     title: {
         fontSize: TYPOGRAPHY['3xl'],
         fontWeight: TYPOGRAPHY.bold,
-        color: COLORS.textPrimary,
+        color: COLORS.white,
         marginBottom: SPACING.sm,
     },
     subtitle: {
         fontSize: TYPOGRAPHY.base,
-        color: COLORS.textSecondary,
+        color: COLORS.white,
     },
     formContainer: {
         marginBottom: SPACING.xl,
     },
+    inputWrapper: {
+        marginBottom: SPACING.lg,
+    },
+    inputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: SPACING.sm,
+    },
+    input: {
+        flex: 1,
+        fontSize: TYPOGRAPHY.base,
+        color: COLORS.white,
+        marginLeft: SPACING.sm,
+        paddingVertical: 0,
+    },
+    underline: {
+        height: 1,
+        backgroundColor: 'rgba(255, 255, 255, 1)',
+        marginTop: SPACING.xs,
+    },
+    errorText: {
+        fontSize: TYPOGRAPHY.sm,
+        color: '#FF6B6B',
+        marginTop: SPACING.xs,
+    },
     registerButton: {
-        marginTop: SPACING.base,
+        marginTop: SPACING.xl,
     },
     signinContainer: {
         flexDirection: 'row',
@@ -213,12 +286,12 @@ const styles = StyleSheet.create({
     },
     signinText: {
         fontSize: TYPOGRAPHY.base,
-        color: COLORS.textSecondary,
+        color: COLORS.white,
     },
     signinLink: {
         fontSize: TYPOGRAPHY.base,
         fontWeight: TYPOGRAPHY.bold,
-        color: COLORS.primary,
+        color: '#FFE500',
     },
 });
 

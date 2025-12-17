@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import {
@@ -85,14 +86,15 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            {/* Profile Header */}
-            <View style={styles.header}>
+            <StatusBar style="light" backgroundColor={COLORS.primary} />
+            {/* Profile Header - Separate Section */}
+            <View style={styles.headerSection}>
                 <View style={styles.avatarContainer}>
                     {user?.avatar ? (
                         <Image source={{ uri: user.avatar }} style={styles.avatar} />
                     ) : (
                         <View style={styles.avatarPlaceholder}>
-                            <Ionicons name="person" size={40} color={COLORS.white} />
+                            <Ionicons name="person" size={40} color={COLORS.gray500} />
                         </View>
                     )}
                 </View>
@@ -101,37 +103,47 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                 {user?.phone && <Text style={styles.phone}>{user.phone}</Text>}
             </View>
 
-            {/* Menu Items */}
-            <View style={styles.menuContainer}>
-                {menuItems.map((item, index) => (
-                    <TouchableOpacity
-                        key={index}
-                        style={styles.menuItem}
-                        onPress={item.onPress}
-                        activeOpacity={0.7}
-                    >
-                        <View style={styles.menuItemLeft}>
+            {/* Curved Menu Container */}
+            <View style={styles.curvedMenuWrapper}>
+                <View style={styles.menuContainer}>
+                    {menuItems.map((item, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            style={[
+                                styles.menuItem,
+                                index === menuItems.length - 1 && styles.menuItemLast
+                            ]}
+                            onPress={item.onPress}
+                            activeOpacity={0.7}
+                        >
+                            <View style={styles.menuItemLeft}>
+                                <View style={[
+                                    styles.iconContainer,
+                                    item.isDestructive && styles.iconContainerDestructive
+                                ]}>
+                                    <Ionicons
+                                        name={item.icon}
+                                        size={22}
+                                        color={item.isDestructive ? COLORS.error : COLORS.primary}
+                                    />
+                                </View>
+                                <Text
+                                    style={[
+                                        styles.menuItemText,
+                                        item.isDestructive && styles.menuItemTextDestructive,
+                                    ]}
+                                >
+                                    {item.title}
+                                </Text>
+                            </View>
                             <Ionicons
-                                name={item.icon}
-                                size={24}
-                                color={item.isDestructive ? COLORS.error : COLORS.textPrimary}
+                                name="chevron-forward"
+                                size={20}
+                                color={COLORS.textSecondary}
                             />
-                            <Text
-                                style={[
-                                    styles.menuItemText,
-                                    item.isDestructive && styles.menuItemTextDestructive,
-                                ]}
-                            >
-                                {item.title}
-                            </Text>
-                        </View>
-                        <Ionicons
-                            name="chevron-forward"
-                            size={20}
-                            color={COLORS.textSecondary}
-                        />
-                    </TouchableOpacity>
-                ))}
+                        </TouchableOpacity>
+                    ))}
+                </View>
             </View>
 
             {/* App Version */}
@@ -145,46 +157,68 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: COLORS.background,
     },
-    header: {
-        backgroundColor: COLORS.white,
+    headerSection: {
+        backgroundColor: COLORS.primary,
         alignItems: 'center',
-        paddingVertical: SPACING['2xl'],
-        marginBottom: SPACING.base,
+        paddingVertical: SPACING['3xl'],
+        paddingBottom: SPACING['4xl'],
+        marginBottom: -20, // Overlap with curved menu
     },
     avatarContainer: {
         marginBottom: SPACING.base,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
     },
     avatar: {
         width: 100,
         height: 100,
         borderRadius: BORDER_RADIUS.full,
+        borderWidth: 4,
+        borderColor: COLORS.white,
     },
     avatarPlaceholder: {
         width: 100,
         height: 100,
         borderRadius: BORDER_RADIUS.full,
-        backgroundColor: COLORS.primary,
+        backgroundColor: COLORS.white,
         justifyContent: 'center',
         alignItems: 'center',
+        borderWidth: 4,
+        borderColor: COLORS.white,
     },
     name: {
         fontSize: TYPOGRAPHY['2xl'],
         fontWeight: TYPOGRAPHY.bold,
-        color: COLORS.textPrimary,
+        color: COLORS.white,
         marginBottom: SPACING.xs,
     },
     email: {
         fontSize: TYPOGRAPHY.base,
-        color: COLORS.textSecondary,
+        color: COLORS.white,
+        opacity: 0.9,
         marginBottom: SPACING.xs,
     },
     phone: {
         fontSize: TYPOGRAPHY.base,
-        color: COLORS.textSecondary,
+        color: COLORS.white,
+        opacity: 0.9,
+    },
+    curvedMenuWrapper: {
+        paddingHorizontal: 0,
+        marginBottom: 0,
     },
     menuContainer: {
         backgroundColor: COLORS.white,
-        marginBottom: SPACING.base,
+        borderRadius: BORDER_RADIUS['2xl'],
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
     },
     menuItem: {
         flexDirection: 'row',
@@ -194,14 +228,29 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: COLORS.borderLight,
     },
+    menuItemLast: {
+        borderBottomWidth: 0,
+    },
     menuItemLeft: {
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: BORDER_RADIUS.lg,
+        backgroundColor: `${COLORS.primary}15`,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iconContainerDestructive: {
+        backgroundColor: `${COLORS.error}15`,
     },
     menuItemText: {
         fontSize: TYPOGRAPHY.base,
         color: COLORS.textPrimary,
         marginLeft: SPACING.base,
+        fontWeight: '500',
     },
     menuItemTextDestructive: {
         color: COLORS.error,
@@ -211,6 +260,7 @@ const styles = StyleSheet.create({
         color: COLORS.textSecondary,
         textAlign: 'center',
         marginVertical: SPACING.xl,
+        marginBottom: SPACING['2xl'],
     },
 });
 

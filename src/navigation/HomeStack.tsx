@@ -7,6 +7,12 @@ import ProductDetailScreen from '../screens/Product/ProductDetailScreen';
 import ProductListScreen from '../screens/Product/ProductListScreen';
 import { HomeStackParamList } from '../types';
 
+import Electronics from '../screens/CategoryProducts/Electronics';
+import Fashion from '../screens/CategoryProducts/Fashion';
+import HomeAppliances from '../screens/CategoryProducts/HomeAppliances';
+import Beauty from '../screens/CategoryProducts/Beauty';
+import Sports from '../screens/CategoryProducts/Sports';
+
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 const HomeStack: React.FC = () => {
@@ -37,6 +43,31 @@ const HomeStack: React.FC = () => {
                 name="ProductList"
                 component={ProductListScreen}
                 options={({ route }) => ({ title: route.params.categoryName })}
+            />
+            <Stack.Screen
+                name="Electronics"
+                component={Electronics}
+                options={{ title: 'Electronics' }}
+            />
+            <Stack.Screen
+                name="Fashion"
+                component={Fashion}
+                options={{ title: 'Fashion' }}
+            />
+            <Stack.Screen
+                name="HomeAppliances"
+                component={HomeAppliances}
+                options={{ title: 'Home Appliances' }}
+            />
+            <Stack.Screen
+                name="Beauty"
+                component={Beauty}
+                options={{ title: 'Beauty' }}
+            />
+            <Stack.Screen
+                name="Sports"
+                component={Sports}
+                options={{ title: 'Sports' }}
             />
             <Stack.Screen
                 name="ProductDetail"

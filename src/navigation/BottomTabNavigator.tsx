@@ -35,7 +35,7 @@ const BottomTabNavigator: React.FC = () => {
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
                 tabBarActiveTintColor: '#2874F0',
-                tabBarInactiveTintColor: COLORS.gray600,
+                tabBarInactiveTintColor: '#292927fd',
                 tabBarStyle: {
                     height: 60,
                     paddingBottom: 8,
@@ -79,8 +79,8 @@ const BottomTabNavigator: React.FC = () => {
 
 const styles = StyleSheet.create({
     badge: {
-        backgroundColor: COLORS.error,
-        color: COLORS.white,
+        backgroundColor: '#ffd500fd',
+        color: COLORS.primary,
         fontSize: 10,
         fontWeight: TYPOGRAPHY.bold as any,
     },

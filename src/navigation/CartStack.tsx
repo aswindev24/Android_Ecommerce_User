@@ -24,12 +24,26 @@ const CartStack: React.FC = () => {
             <Stack.Screen
                 name="Cart"
                 component={CartScreen}
-                options={{ title: 'My Cart' }}
+                options={{
+                    title: 'My Cart',
+                    headerStyle: {
+                        backgroundColor: COLORS.primary,
+                    },
+                    headerTintColor: COLORS.white,
+                    headerTitleAlign: 'center',
+                }}
             />
             <Stack.Screen
                 name="Checkout"
                 component={CheckoutScreen}
-                options={{ title: 'Checkout' }}
+                options={{
+                    title: 'Checkout',
+                    headerStyle: {
+                        backgroundColor: COLORS.primary,
+                    },
+                    headerTintColor: COLORS.white,
+                    headerTitleAlign: 'center',
+                }}
             />
         </Stack.Navigator>
     );

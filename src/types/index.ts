@@ -116,6 +116,11 @@ export type HomeStackParamList = {
     Home: undefined;
     CategoryList: undefined;
     ProductList: { categoryId: string; categoryName: string; searchQuery?: string };
+    Electronics: undefined;
+    Fashion: undefined;
+    HomeAppliances: undefined;
+    Beauty: undefined;
+    Sports: undefined;
     ProductDetail: { productId: string };
 };
 

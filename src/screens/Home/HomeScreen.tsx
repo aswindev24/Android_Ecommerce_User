@@ -1,5 +1,5 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
     FlatList,
@@ -42,15 +42,42 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
     const [bestSellers, setBestSellers] = useState<Product[]>([]);
     const [currentOfferIndex, setCurrentOfferIndex] = useState(0);
+    const flatListRef = useRef<FlatList>(null);
 
     useEffect(() => {
         loadData();
     }, []);
 
+    // Auto-scroll effect for offers
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            if (OFFERS.length > 0) {
+                let nextIndex = currentOfferIndex + 1;
+                if (nextIndex >= OFFERS.length) {
+                    nextIndex = 0;
+                }
+
+                flatListRef.current?.scrollToIndex({
+                    index: nextIndex,
+                    animated: true,
+                });
+                setCurrentOfferIndex(nextIndex);
+            }
+        }, 3000); // Change slide every 3 seconds
+
+        return () => clearInterval(intervalId);
+    }, [currentOfferIndex]);
+
     const loadData = () => {
+        console.log('Loading data...');
+        console.log('Total products:', dummyProducts.length);
         setCategories(dummyCategories);
-        setFeaturedProducts(dummyProducts.filter(p => p.isFeatured));
-        setBestSellers(dummyProducts.filter(p => p.isBestSeller));
+        const featured = dummyProducts.filter(p => p.isFeatured);
+        const bestsellers = dummyProducts.filter(p => p.isBestSeller);
+        console.log('Featured products:', featured.length);
+        console.log('Best sellers:', bestsellers.length);
+        setFeaturedProducts(featured);
+        setBestSellers(bestsellers);
     };
 
     const onRefresh = async () => {
@@ -65,7 +92,25 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     };
 
     const handleCategoryPress = (categoryId: string, categoryName: string) => {
-        navigation.navigate('ProductList', { categoryId, categoryName });
+        switch (categoryName) {
+            case 'Electronics':
+                navigation.navigate('Electronics');
+                break;
+            case 'Fashion':
+                navigation.navigate('Fashion');
+                break;
+            case 'Home & Living':
+                navigation.navigate('HomeAppliances');
+                break;
+            case 'Beauty':
+                navigation.navigate('Beauty');
+                break;
+            case 'Sports':
+                navigation.navigate('Sports');
+                break;
+            default:
+                navigation.navigate('ProductList', { categoryId, categoryName });
+        }
     };
 
     const handleAddToCart = async (product: Product) => {
@@ -102,12 +147,18 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 {/* Offer Carousel */}
                 <View style={styles.carouselContainer}>
                     <FlatList
+                        ref={flatListRef}
                         data={OFFERS}
                         renderItem={renderOfferItem}
                         keyExtractor={(item) => item.id}
                         horizontal
                         pagingEnabled
                         showsHorizontalScrollIndicator={false}
+                        getItemLayout={(data, index) => ({
+                            length: width - (LAYOUT.screenPadding * 2),
+                            offset: (width - (LAYOUT.screenPadding * 2)) * index,
+                            index,
+                        })}
                         onMomentumScrollEnd={(event) => {
                             const index = Math.round(event.nativeEvent.contentOffset.x / (width - LAYOUT.screenPadding * 2));
                             setCurrentOfferIndex(index);
@@ -178,19 +229,19 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.background,
     },
     scrollContent: {
-        paddingTop: SPACING.lg,
+        paddingTop: SPACING.md,
         paddingBottom: SPACING['3xl'],
+        backgroundColor: COLORS.backgroundLight,
     },
     carouselContainer: {
         marginBottom: SPACING.xl,
+        paddingHorizontal: LAYOUT.screenPadding,
     },
     offerItem: {
-        width: width - (LAYOUT.screenPadding * 2), // Full width with padding
+        width: width - (LAYOUT.screenPadding * 2), // Full width with container padding
         height: 200,
-        marginHorizontal: LAYOUT.screenPadding,
         borderRadius: BORDER_RADIUS.xl,
         overflow: 'hidden',
-
     },
     offerImage: {
         width: '100%',

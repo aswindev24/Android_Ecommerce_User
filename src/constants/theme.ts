@@ -56,7 +56,7 @@ export const COLORS = {
 
 export const TYPOGRAPHY = {
     // Font Sizes
-    xxs: 5,
+
     xs: 12,
     sm: 14,
     base: 16,

@@ -4,12 +4,17 @@ import React, { useState } from 'react';
 import {
     Dimensions,
     FlatList,
-    Image, Platform, StatusBar, StyleSheet,
+    Image,
+    Modal,
+    Platform,
+    StatusBar,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { Category, HomeStackParamList } from '../../types';
@@ -27,6 +32,17 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress }) => {
     const { user } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
+    const insets = useSafeAreaInsets();
+    const [showAddressModal, setShowAddressModal] = useState(false);
+
+    // Sample addresses - in a real app, these would come from your backend or user context
+    const [addresses] = useState([
+        { id: '1', name: 'Home', address: 'Kuttiattoor, Calicut, Kerala, 673508' },
+        { id: '2', name: 'Office', address: 'Cyber Park, Calicut, Kerala, 673014' },
+        { id: '3', name: 'Parents House', address: 'Vadakara, Kozhikode, Kerala, 673101' },
+    ]);
+
+    const [selectedAddress, setSelectedAddress] = useState(addresses[0]);
 
     const renderCategory = ({ item }: { item: Category }) => (
         <TouchableOpacity
@@ -55,8 +71,13 @@ const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress
         }
     };
 
+    const handleSelectAddress = (address: typeof addresses[0]) => {
+        setSelectedAddress(address);
+        setShowAddressModal(false);
+    };
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
             {/* Service Pills and Location */}
             <View style={styles.pillsContainer}>
                 <TouchableOpacity style={styles.flipkartPill}>
@@ -65,11 +86,16 @@ const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress
                 </TouchableOpacity>
 
                 {/* Location Bar */}
-                <TouchableOpacity style={styles.locationBar}>
+                <TouchableOpacity
+                    style={styles.locationBar}
+                    onPress={() => setShowAddressModal(true)}
+                    activeOpacity={0.7}
+                >
                     <Ionicons name="home" size={14} color="#2874F0" />
                     <Text style={styles.locationText} numberOfLines={1}>
-                        {user?.address ? user.address : 'Kuttiattoor, Calicut, Kerala'}
+                        {selectedAddress.address}
                     </Text>
+                    <Ionicons name="chevron-down" size={14} color="#2874F0" />
                 </TouchableOpacity>
             </View>
 
@@ -99,14 +125,10 @@ const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress
                             <Ionicons name="close" size={18} color="#717478" />
                         </TouchableOpacity>
                     )}
-                    <TouchableOpacity style={styles.cameraButton}>
-                        <Ionicons name="camera-outline" size={20} color="#717478" />
-                    </TouchableOpacity>
+
                 </View>
 
-                <TouchableOpacity style={styles.qrButton}>
-                    <Ionicons name="qr-code" size={24} color={COLORS.white} />
-                </TouchableOpacity>
+
             </View>
 
             {/* Categories */}
@@ -120,6 +142,66 @@ const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress
                     contentContainerStyle={styles.categoriesList}
                 />
             </View>
+
+            {/* Address Selector Modal */}
+            <Modal
+                visible={showAddressModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowAddressModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        {/* Modal Header */}
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Select Delivery Address</Text>
+                            <TouchableOpacity
+                                onPress={() => setShowAddressModal(false)}
+                                style={styles.closeButton}
+                            >
+                                <Ionicons name="close" size={24} color={COLORS.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Address List */}
+                        <View style={styles.addressList}>
+                            {addresses.map((address) => (
+                                <TouchableOpacity
+                                    key={address.id}
+                                    style={styles.addressItem}
+                                    onPress={() => handleSelectAddress(address)}
+                                    activeOpacity={0.7}
+                                >
+                                    <View style={styles.addressInfo}>
+                                        <View style={styles.addressIcon}>
+                                            <Ionicons
+                                                name={address.name === 'Home' ? 'home' : address.name === 'Office' ? 'briefcase' : 'location'}
+                                                size={20}
+                                                color={COLORS.primary}
+                                            />
+                                        </View>
+                                        <View style={styles.addressDetails}>
+                                            <Text style={styles.addressName}>{address.name}</Text>
+                                            <Text style={styles.addressText}>{address.address}</Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.radioButton}>
+                                        {selectedAddress.id === address.id && (
+                                            <View style={styles.radioButtonSelected} />
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        {/* Add New Address Button */}
+                        <TouchableOpacity style={styles.addAddressButton}>
+                            <Ionicons name="add-circle" size={20} color={COLORS.primary} />
+                            <Text style={styles.addAddressText}>Add New Address</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -127,12 +209,9 @@ const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#2874F0',
-
         zIndex: 100,
-
     },
     pillsContainer: {
-        marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         flexDirection: 'row',
         paddingHorizontal: LAYOUT.screenPadding,
         paddingTop: 0,
@@ -140,6 +219,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: SPACING.sm,
     },
+
     flipkartPill: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -147,7 +227,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         paddingVertical: 8,
         borderRadius: 20,
-        gap: 4,
+        gap: 4
     },
     flipkartText: {
         fontSize: 13,
@@ -275,6 +355,114 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         color: COLORS.white,
         textAlign: 'center',
+    },
+    // Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: COLORS.white,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: SPACING['2xl'],
+        maxHeight: '80%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: LAYOUT.screenPadding,
+        paddingVertical: SPACING.lg,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: COLORS.textPrimary,
+    },
+    closeButton: {
+        padding: SPACING.xs,
+    },
+    addressList: {
+        paddingHorizontal: LAYOUT.screenPadding,
+        paddingTop: SPACING.md,
+    },
+    addressItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: SPACING.md,
+        paddingHorizontal: SPACING.md,
+        backgroundColor: COLORS.backgroundLight,
+        borderRadius: 12,
+        marginBottom: SPACING.md,
+    },
+    addressInfo: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        flex: 1,
+        marginRight: SPACING.md,
+    },
+    addressIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: COLORS.white,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: SPACING.md,
+    },
+    addressDetails: {
+        flex: 1,
+    },
+    addressName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: COLORS.textPrimary,
+        marginBottom: 4,
+    },
+    addressText: {
+        fontSize: 14,
+        color: COLORS.textSecondary,
+        lineHeight: 20,
+    },
+    radioButton: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: COLORS.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    radioButtonSelected: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: COLORS.primary,
+    },
+    addAddressButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: SPACING.md,
+        paddingHorizontal: LAYOUT.screenPadding,
+        marginHorizontal: LAYOUT.screenPadding,
+        marginTop: SPACING.md,
+        backgroundColor: COLORS.backgroundLight,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: COLORS.primary,
+        borderStyle: 'dashed',
+    },
+    addAddressText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: COLORS.primary,
+        marginLeft: SPACING.sm,
     },
 });
 

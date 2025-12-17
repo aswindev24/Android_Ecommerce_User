@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import {
@@ -76,6 +77,7 @@ const CartScreen: React.FC<Props> = ({ navigation }) => {
     if (items.length === 0) {
         return (
             <View style={styles.emptyContainer}>
+                <StatusBar style="light" backgroundColor={COLORS.primary} />
                 <Ionicons name="cart-outline" size={80} color={COLORS.gray400} />
                 <Text style={styles.emptyTitle}>Your cart is empty</Text>
                 <Text style={styles.emptyText}>Add some products to get started</Text>
@@ -85,6 +87,7 @@ const CartScreen: React.FC<Props> = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
+            <StatusBar style="light" backgroundColor={COLORS.primary} />
             <FlatList
                 data={items}
                 renderItem={renderCartItem}

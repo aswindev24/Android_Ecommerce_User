@@ -1,12 +1,13 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import {
-    Alert,
     ScrollView,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { StatusBar } from 'expo-status-bar';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { APP_CONFIG } from '../../constants/config';
@@ -79,23 +80,27 @@ const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
         setIsLoading(true);
         try {
             // Simulate order placement
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            Alert.alert(
-                'Order Placed Successfully!',
-                'Your order has been placed. You will receive a confirmation email shortly.',
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => {
-                            clearCart();
-                            navigation.navigate('Cart');
-                        },
-                    },
-                ]
-            );
+            Toast.show({
+                type: 'success',
+                text1: 'Order Placed Successfully!',
+                text2: 'Your order has been placed successfully.',
+                position: 'bottom'
+            });
+
+            setTimeout(() => {
+                clearCart();
+                navigation.navigate('Cart');
+            }, 1500);
+
         } catch (error) {
-            Alert.alert('Error', 'Failed to place order. Please try again.');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Failed to place order. Please try again.',
+                position: 'bottom'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -103,6 +108,7 @@ const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
+            <StatusBar style="light" backgroundColor={COLORS.primary} />
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
