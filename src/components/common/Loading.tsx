@@ -20,6 +20,7 @@ const Loading: React.FC<LoadingProps> = ({
             <View style={styles.fullScreenContainer}>
                 <ActivityIndicator size={size} color={color} />
                 {message && <Text style={styles.message}>{message}</Text>}
+
             </View>
         );
     }

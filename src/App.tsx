@@ -4,19 +4,22 @@ import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { LocationProvider } from './context/LocationContext';
 import RootNavigator from './navigation/RootNavigator';
 
 const App: React.FC = () => {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <AuthProvider>
-                <CartProvider>
-                    <StatusBar
-                        barStyle="light-content"
-                        backgroundColor="#2874F0"
-                    />
-                    <RootNavigator />
-                </CartProvider>
+                <LocationProvider>
+                    <CartProvider>
+                        <StatusBar
+                            barStyle="light-content"
+                            backgroundColor="#2874F0"
+                        />
+                        <RootNavigator />
+                    </CartProvider>
+                </LocationProvider>
             </AuthProvider>
             <Toast />
         </GestureHandlerRootView>

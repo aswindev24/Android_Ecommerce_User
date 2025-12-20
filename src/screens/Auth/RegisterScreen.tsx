@@ -72,7 +72,16 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
         try {
             await register(formData);
-            // Navigation will be handled by RootNavigator based on auth state
+            Alert.alert(
+                'Registration Successful',
+                'Your account has been created successfully. Please sign in to continue.',
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => navigation.navigate('Login'),
+                    },
+                ]
+            );
         } catch (error: any) {
             Alert.alert('Registration Failed', error.message || 'Please try again');
         }

@@ -59,7 +59,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         {
             icon: 'location-outline' as const,
             title: 'Saved Addresses',
-            onPress: () => Alert.alert('Coming Soon', 'This feature will be available soon'),
+            onPress: () => navigation.navigate('Address'),
         },
         {
             icon: 'card-outline' as const,
@@ -74,7 +74,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         {
             icon: 'help-circle-outline' as const,
             title: 'Help & Support',
-            onPress: () => Alert.alert('Coming Soon', 'This feature will be available soon'),
+            onPress: () => navigation.navigate('HelpAndSupport'),
         },
         {
             icon: 'log-out-outline' as const,

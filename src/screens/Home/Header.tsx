@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     Dimensions,
     FlatList,
@@ -17,7 +18,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
-import { Category, HomeStackParamList } from '../../types';
+import { Category, HomeStackParamList, SavedAddress } from '../../types';
+import { useLocation } from '../../context/LocationContext';
 
 const { width } = Dimensions.get('window');
 
@@ -30,19 +32,19 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress }) => {
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
+    const { addresses, selectedAddress, refreshAddresses, selectAddress } = useLocation();
     const [searchQuery, setSearchQuery] = useState('');
     const insets = useSafeAreaInsets();
     const [showAddressModal, setShowAddressModal] = useState(false);
 
-    // Sample addresses - in a real app, these would come from your backend or user context
-    const [addresses] = useState([
-        { id: '1', name: 'Home', address: 'Kuttiattoor, Calicut, Kerala, 673508' },
-        { id: '2', name: 'Office', address: 'Cyber Park, Calicut, Kerala, 673014' },
-        { id: '3', name: 'Parents House', address: 'Vadakara, Kozhikode, Kerala, 673101' },
-    ]);
-
-    const [selectedAddress, setSelectedAddress] = useState(addresses[0]);
+    useFocusEffect(
+        useCallback(() => {
+            if (isAuthenticated) {
+                refreshAddresses();
+            }
+        }, [isAuthenticated, refreshAddresses])
+    );
 
     const renderCategory = ({ item }: { item: Category }) => (
         <TouchableOpacity
@@ -71,9 +73,14 @@ const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress
         }
     };
 
-    const handleSelectAddress = (address: typeof addresses[0]) => {
-        setSelectedAddress(address);
+    const handleSelectAddress = (address: SavedAddress) => {
+        selectAddress(address, true);
         setShowAddressModal(false);
+    };
+
+    const handleAddNewAddress = () => {
+        setShowAddressModal(false);
+        (navigation as any).navigate('ProfileTab', { screen: 'Address' });
     };
 
     return (
@@ -91,9 +98,11 @@ const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress
                     onPress={() => setShowAddressModal(true)}
                     activeOpacity={0.7}
                 >
-                    <Ionicons name="home" size={14} color="#2874F0" />
+                    <Ionicons name="pin" size={14} color="#2874F0" />
                     <Text style={styles.locationText} numberOfLines={1}>
-                        {selectedAddress.address}
+                        {selectedAddress
+                            ? `${selectedAddress.address}, ${selectedAddress.city}${selectedAddress.pincode ? `, ${selectedAddress.pincode}` : ''}${selectedAddress.state ? `, ${selectedAddress.state}` : ''}${selectedAddress.landmark ? `, ${selectedAddress.landmark}` : ''}`
+                            : 'Select Address'}
                     </Text>
                     <Ionicons name="chevron-down" size={14} color="#2874F0" />
                 </TouchableOpacity>
@@ -165,37 +174,46 @@ const Header: React.FC<HeaderProps> = ({ navigation, categories, onCategoryPress
 
                         {/* Address List */}
                         <View style={styles.addressList}>
-                            {addresses.map((address) => (
-                                <TouchableOpacity
-                                    key={address.id}
-                                    style={styles.addressItem}
-                                    onPress={() => handleSelectAddress(address)}
-                                    activeOpacity={0.7}
-                                >
-                                    <View style={styles.addressInfo}>
-                                        <View style={styles.addressIcon}>
-                                            <Ionicons
-                                                name={address.name === 'Home' ? 'home' : address.name === 'Office' ? 'briefcase' : 'location'}
-                                                size={20}
-                                                color={COLORS.primary}
-                                            />
+                            {addresses.length === 0 ? (
+                                <View style={styles.emptyAddress}>
+                                    <Text style={styles.emptyAddressText}>No addresses saved</Text>
+                                </View>
+                            ) : (
+                                addresses.map((address) => (
+                                    <TouchableOpacity
+                                        key={address.id}
+                                        style={styles.addressItem}
+                                        onPress={() => handleSelectAddress(address)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={styles.addressInfo}>
+                                            <View style={styles.addressIcon}>
+                                                <Ionicons
+                                                    name={address.type === 'Home' ? 'home' : address.type === 'Work' ? 'briefcase' : 'location'}
+                                                    size={20}
+                                                    color={COLORS.primary}
+                                                />
+                                            </View>
+                                            <View style={styles.addressDetails}>
+                                                <Text style={styles.addressName}>{address.type}</Text>
+                                                <Text style={styles.addressText}>{address.address}</Text>
+                                            </View>
                                         </View>
-                                        <View style={styles.addressDetails}>
-                                            <Text style={styles.addressName}>{address.name}</Text>
-                                            <Text style={styles.addressText}>{address.address}</Text>
+                                        <View style={styles.radioButton}>
+                                            {selectedAddress?.id === address.id && (
+                                                <View style={styles.radioButtonSelected} />
+                                            )}
                                         </View>
-                                    </View>
-                                    <View style={styles.radioButton}>
-                                        {selectedAddress.id === address.id && (
-                                            <View style={styles.radioButtonSelected} />
-                                        )}
-                                    </View>
-                                </TouchableOpacity>
-                            ))}
+                                    </TouchableOpacity>
+                                ))
+                            )}
                         </View>
 
                         {/* Add New Address Button */}
-                        <TouchableOpacity style={styles.addAddressButton}>
+                        <TouchableOpacity
+                            style={styles.addAddressButton}
+                            onPress={handleAddNewAddress}
+                        >
                             <Ionicons name="add-circle" size={20} color={COLORS.primary} />
                             <Text style={styles.addAddressText}>Add New Address</Text>
                         </TouchableOpacity>
@@ -463,6 +481,14 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: COLORS.primary,
         marginLeft: SPACING.sm,
+    },
+    emptyAddress: {
+        paddingVertical: SPACING.xl,
+        alignItems: 'center',
+    },
+    emptyAddressText: {
+        fontSize: 16,
+        color: COLORS.textSecondary,
     },
 });
 

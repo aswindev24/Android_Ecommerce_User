@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import {
@@ -107,6 +108,7 @@ const OrderHistoryScreen: React.FC<Props> = () => {
 
     return (
         <View style={styles.container}>
+            <StatusBar style="light" backgroundColor={COLORS.primary} />
             <FlatList
                 data={dummyOrders}
                 renderItem={renderOrder}

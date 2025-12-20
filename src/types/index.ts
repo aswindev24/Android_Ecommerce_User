@@ -1,6 +1,7 @@
 // User & Authentication Types
 export interface User {
     id: string;
+    userId: string;
     name: string;
     email: string;
     phone: string;
@@ -129,9 +130,17 @@ export type CartStackParamList = {
     Checkout: undefined;
 };
 
+export interface SavedAddress extends DeliveryAddress {
+    id: string;
+    isDefault?: boolean;
+    type: 'Home' | 'Work' | 'Other';
+}
+
 export type ProfileStackParamList = {
     Profile: undefined;
     EditProfile: undefined;
+    Address: undefined;
+    HelpAndSupport: undefined;
     OrderHistory: undefined;
     OrderDetail: { orderId: string };
 };

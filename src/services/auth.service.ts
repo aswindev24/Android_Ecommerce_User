@@ -1,85 +1,39 @@
 import { AuthResponse, LoginCredentials, RegisterData, User } from '../types';
 import { getToken, getUser, removeToken, removeUser, saveToken, saveUser } from '../utils/storage';
-// import api from './api'; // Commented out for mock authentication
+import api from './api';
 
-/**
- * MOCK AUTHENTICATION SERVICE
- * This service uses mock data instead of real API calls for development/testing.
- * Valid credentials: test@gmail.com / test123
- * To use real backend API, uncomment the api import and replace mock implementations.
- */
-
-// Mock user data for testing
-const MOCK_USER: User = {
-    id: '1',
-    name: 'Test User',
-    email: 'test@gmail.com',
-    phone: '1234567890',
-};
-
-const MOCK_TOKEN = 'mock-jwt-token-12345';
-
-// Mock credentials
-const VALID_CREDENTIALS = {
-    email: 'test@gmail.com',
-    password: 'test123',
-};
-
-// Login (Mock Implementation)
+// Login
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const response = await api.post('/users/login', credentials);
+        const { success, token, user, message } = response.data;
 
-        // Check credentials
-        if (
-            credentials.email === VALID_CREDENTIALS.email &&
-            credentials.password === VALID_CREDENTIALS.password
-        ) {
-            // Save token and user data
-            await saveToken(MOCK_TOKEN);
-            await saveUser(MOCK_USER);
-
-            return {
-                success: true,
-                message: 'Login successful',
-                token: MOCK_TOKEN,
-                user: MOCK_USER,
-            };
+        if (success) {
+            await saveToken(token);
+            await saveUser(user);
+            return { success, message, token, user };
         } else {
-            throw new Error('Invalid email or password');
+            throw new Error(message || 'Login failed');
         }
     } catch (error: any) {
-        throw new Error(error.message || 'Login failed');
+        throw new Error(error.response?.data?.message || error.message || 'Login failed');
     }
 };
 
-// Register (Mock Implementation)
+// Register
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
     try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const response = await api.post('/users/register', data);
+        const { success, token, user, message } = response.data;
 
-        // Create new user from registration data
-        const newUser: User = {
-            id: Date.now().toString(),
-            name: data.name,
-            email: data.email,
-            phone: data.phone,
-        };
-
-        // Save token and user data
-        await saveToken(MOCK_TOKEN);
-        await saveUser(newUser);
-
-        return {
-            success: true,
-            message: 'Registration successful',
-            token: MOCK_TOKEN,
-            user: newUser,
-        };
+        if (success) {
+            // Note: We are NOT saving token/user here because the user wants to login manually after registration
+            return { success, message, token, user };
+        } else {
+            throw new Error(message || 'Registration failed');
+        }
     } catch (error: any) {
-        throw new Error(error.message || 'Registration failed');
+        throw new Error(error.response?.data?.message || error.message || 'Registration failed');
     }
 };
 
@@ -94,12 +48,9 @@ export const logout = async (): Promise<void> => {
     }
 };
 
-// Get Current User (Mock Implementation)
+// Get Current User
 export const getCurrentUser = async (): Promise<User> => {
     try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
         const token = await getToken();
         if (!token) {
             throw new Error('Not authenticated');
@@ -116,29 +67,18 @@ export const getCurrentUser = async (): Promise<User> => {
     }
 };
 
-// Update Profile (Mock Implementation)
+// Update Profile
 export const updateProfile = async (data: Partial<User>): Promise<User> => {
     try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const currentUser = await getUser();
-        if (!currentUser) {
-            throw new Error('User not found');
-        }
-
-        // Merge updated data with current user
-        const updatedUser: User = {
-            ...currentUser,
-            ...data,
-        };
+        const response = await api.put('/users/profile', data);
+        const updatedUser = response.data;
 
         // Save updated user data
         await saveUser(updatedUser);
 
         return updatedUser;
     } catch (error: any) {
-        throw new Error(error.message || 'Failed to update profile');
+        throw new Error(error.response?.data?.message || error.message || 'Failed to update profile');
     }
 };
 

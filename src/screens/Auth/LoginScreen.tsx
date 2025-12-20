@@ -28,8 +28,8 @@ interface Props {
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
     const { login, isLoading } = useAuth();
-    const [email, setEmail] = useState('test@gmail.com');
-    const [password, setPassword] = useState('test123');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
     const handleLogin = async () => {

@@ -209,6 +209,7 @@ export const dummyProducts: Product[] = [
 // Dummy User
 export const dummyUser: User = {
     id: '1',
+    userId: 'USR1734673612345',
     name: 'John Doe',
     email: 'john.doe@example.com',
     phone: '9876543210',

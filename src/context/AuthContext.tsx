@@ -69,12 +69,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setIsLoading(true);
             const response = await authService.register(data);
 
-            if (response.success) {
-                setUser(response.user);
-                setIsAuthenticated(true);
-            } else {
+            if (!response.success) {
                 throw new Error(response.message || 'Registration failed');
             }
+            // We don't set user or isAuthenticated here to force manual login
         } catch (error: any) {
             throw error;
         } finally {

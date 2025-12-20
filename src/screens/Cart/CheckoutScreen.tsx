@@ -1,24 +1,22 @@
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
     ScrollView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { StatusBar } from 'expo-status-bar';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { APP_CONFIG } from '../../constants/config';
-import { BORDER_RADIUS, COLORS, LAYOUT, SPACING, TYPOGRAPHY } from '../../constants/theme';
+import { BORDER_RADIUS, COLORS, LAYOUT, SHADOWS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { useCart } from '../../context/CartContext';
 import { CartStackParamList } from '../../types';
-import {
-    validatePhone,
-    validatePincode,
-    validateRequired,
-} from '../../utils/validation';
+import { useLocation } from '../../context/LocationContext';
 
 type CheckoutScreenNavigationProp = NativeStackNavigationProp<CartStackParamList, 'Checkout'>;
 
@@ -28,52 +26,18 @@ interface Props {
 
 const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
     const { total, clearCart } = useCart();
-    const [formData, setFormData] = useState({
-        fullName: '',
-        phone: '',
-        address: '',
-        city: '',
-        state: '',
-        pincode: '',
-        landmark: '',
-    });
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const { selectedAddress } = useLocation();
+    const [selectedPayment, setSelectedPayment] = useState<'cod' | 'razorpay'>('cod');
     const [isLoading, setIsLoading] = useState(false);
 
-    const updateField = (field: string, value: string) => {
-        setFormData({ ...formData, [field]: value });
-        if (errors[field]) {
-            setErrors({ ...errors, [field]: '' });
-        }
-    };
-
-    const validateForm = () => {
-        const newErrors: Record<string, string> = {};
-
-        const nameValidation = validateRequired(formData.fullName, 'Full name');
-        if (!nameValidation.isValid) newErrors.fullName = nameValidation.error!;
-
-        const phoneValidation = validatePhone(formData.phone);
-        if (!phoneValidation.isValid) newErrors.phone = phoneValidation.error!;
-
-        const addressValidation = validateRequired(formData.address, 'Address');
-        if (!addressValidation.isValid) newErrors.address = addressValidation.error!;
-
-        const cityValidation = validateRequired(formData.city, 'City');
-        if (!cityValidation.isValid) newErrors.city = cityValidation.error!;
-
-        const stateValidation = validateRequired(formData.state, 'State');
-        if (!stateValidation.isValid) newErrors.state = stateValidation.error!;
-
-        const pincodeValidation = validatePincode(formData.pincode);
-        if (!pincodeValidation.isValid) newErrors.pincode = pincodeValidation.error!;
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
     const handlePlaceOrder = async () => {
-        if (!validateForm()) {
+        if (!selectedAddress) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Please select a delivery address first',
+                position: 'bottom'
+            });
             return;
         }
 
@@ -85,7 +49,7 @@ const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
             Toast.show({
                 type: 'success',
                 text1: 'Order Placed Successfully!',
-                text2: 'Your order has been placed successfully.',
+                text2: `Payment via ${selectedPayment === 'cod' ? 'Cash on Delivery' : 'Razorpay'}`,
                 position: 'bottom'
             });
 
@@ -115,121 +79,93 @@ const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
             >
                 {/* Delivery Address */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Delivery Address</Text>
-
-                    <Input
-                        label="Full Name"
-                        placeholder="Enter your full name"
-                        value={formData.fullName}
-                        onChangeText={(text) => updateField('fullName', text)}
-                        error={errors.fullName}
-                        editable={!isLoading}
-                    />
-
-                    <Input
-                        label="Phone Number"
-                        placeholder="Enter your phone number"
-                        value={formData.phone}
-                        onChangeText={(text) => updateField('phone', text)}
-                        keyboardType="phone-pad"
-                        error={errors.phone}
-                        editable={!isLoading}
-                        maxLength={10}
-                    />
-
-                    <Input
-                        label="Address"
-                        placeholder="House no., Building name"
-                        value={formData.address}
-                        onChangeText={(text) => updateField('address', text)}
-                        error={errors.address}
-                        editable={!isLoading}
-                        multiline
-                    />
-
-                    <Input
-                        label="Landmark (Optional)"
-                        placeholder="Nearby landmark"
-                        value={formData.landmark}
-                        onChangeText={(text) => updateField('landmark', text)}
-                        editable={!isLoading}
-                    />
-
-                    <View style={styles.row}>
-                        <Input
-                            label="City"
-                            placeholder="City"
-                            value={formData.city}
-                            onChangeText={(text) => updateField('city', text)}
-                            error={errors.city}
-                            editable={!isLoading}
-                            containerStyle={styles.halfInput}
-                        />
-
-                        <Input
-                            label="State"
-                            placeholder="State"
-                            value={formData.state}
-                            onChangeText={(text) => updateField('state', text)}
-                            error={errors.state}
-                            editable={!isLoading}
-                            containerStyle={styles.halfInput}
-                        />
+                    <Text style={styles.sectionTitle}>Shipping Address</Text>
+                    <View style={styles.addressCard}>
+                        {selectedAddress ? (
+                            <>
+                                <View style={styles.addressHeaderRow}>
+                                    <Text style={styles.addressName}>{selectedAddress.fullName}</Text>
+                                    <View style={styles.addressTag}>
+                                        <Text style={styles.addressTagText}>{selectedAddress.type.toUpperCase()}</Text>
+                                    </View>
+                                </View>
+                                <Text style={styles.addressText}>{selectedAddress.address}</Text>
+                                <Text style={styles.addressText}>
+                                    {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
+                                </Text>
+                                <Text style={styles.phoneText}>{selectedAddress.phone}</Text>
+                            </>
+                        ) : (
+                            <Text style={styles.addressText}>No address selected. Please go back to the cart to select one.</Text>
+                        )}
                     </View>
-
-                    <Input
-                        label="Pincode"
-                        placeholder="Enter pincode"
-                        value={formData.pincode}
-                        onChangeText={(text) => updateField('pincode', text)}
-                        keyboardType="number-pad"
-                        error={errors.pincode}
-                        editable={!isLoading}
-                        maxLength={6}
-                    />
                 </View>
 
                 {/* Payment Method */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Payment Method</Text>
-                    <View style={styles.paymentOption}>
-                        <Text style={styles.paymentText}>Cash on Delivery</Text>
-                    </View>
+
+                    <TouchableOpacity
+                        style={[
+                            styles.paymentOption,
+                            selectedPayment === 'cod' && styles.paymentOptionSelected
+                        ]}
+                        onPress={() => setSelectedPayment('cod')}
+                    >
+                        <View style={styles.paymentRow}>
+                            <View style={[styles.radio, selectedPayment === 'cod' && styles.radioSelected]} />
+                            <Text style={styles.paymentText}>Cash on Delivery (COD)</Text>
+                        </View>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[
+                            styles.paymentOption,
+                            selectedPayment === 'razorpay' && styles.paymentOptionSelected
+                        ]}
+                        onPress={() => setSelectedPayment('razorpay')}
+                    >
+                        <View style={styles.paymentRow}>
+                            <View style={[styles.radio, selectedPayment === 'razorpay' && styles.radioSelected]} />
+                            <Text style={styles.paymentText}>Razorpay / UPI / NetBanking</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Order Summary */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Order Summary</Text>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Subtotal</Text>
-                        <Text style={styles.summaryValue}>
-                            {APP_CONFIG.CURRENCY}{total}
-                        </Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Delivery Charges</Text>
-                        <Text style={styles.summaryValue}>FREE</Text>
-                    </View>
-                    <View style={styles.divider} />
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.totalLabel}>Total Amount</Text>
-                        <Text style={styles.totalValue}>
-                            {APP_CONFIG.CURRENCY}{total}
-                        </Text>
+                    <View style={styles.summaryContainer}>
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.summaryLabel}>Subtotal</Text>
+                            <Text style={styles.summaryValue}>
+                                {APP_CONFIG.CURRENCY}{total}
+                            </Text>
+                        </View>
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.summaryLabel}>Delivery Charges</Text>
+                            <Text style={[styles.summaryValue, { color: COLORS.success }]}>FREE</Text>
+                        </View>
+                        <View style={styles.divider} />
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.totalLabel}>Total Amount</Text>
+                            <Text style={styles.totalValue}>
+                                {APP_CONFIG.CURRENCY}{total}
+                            </Text>
+                        </View>
                     </View>
                 </View>
-            </ScrollView>
 
-            {/* Place Order Button */}
-            <View style={styles.footer}>
+                {/* Place Order Button */}
                 <Button
                     title="Place Order"
                     onPress={handlePlaceOrder}
                     loading={isLoading}
                     disabled={isLoading}
                     fullWidth
+                    style={styles.placeOrderButton}
                 />
-            </View>
+            </ScrollView>
         </View>
     );
 };
@@ -243,31 +179,93 @@ const styles = StyleSheet.create({
         padding: LAYOUT.screenPadding,
     },
     section: {
-        marginBottom: SPACING.xl,
+        marginBottom: SPACING.lg,
     },
     sectionTitle: {
         fontSize: TYPOGRAPHY.lg,
         fontWeight: TYPOGRAPHY.bold,
         color: COLORS.textPrimary,
-        marginBottom: SPACING.base,
+        marginBottom: SPACING.md,
     },
-    row: {
+    addressCard: {
+        backgroundColor: COLORS.white,
+        padding: SPACING.md,
+        borderRadius: BORDER_RADIUS.md,
+        ...SHADOWS.sm,
+    },
+    addressHeaderRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: SPACING.sm,
     },
-    halfInput: {
-        width: '48%',
+    addressName: {
+        fontSize: TYPOGRAPHY.base,
+        fontWeight: 'bold',
+        color: COLORS.textPrimary,
+        marginRight: SPACING.sm,
+    },
+    addressTag: {
+        backgroundColor: `${COLORS.primary}15`,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    addressTagText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: COLORS.primary,
+    },
+    addressText: {
+        fontSize: TYPOGRAPHY.sm,
+        color: COLORS.textSecondary,
+        marginBottom: 2,
+        lineHeight: 20,
+    },
+    phoneText: {
+        fontSize: TYPOGRAPHY.sm,
+        color: COLORS.textPrimary,
+        marginTop: SPACING.sm,
+        fontWeight: '500',
     },
     paymentOption: {
         backgroundColor: COLORS.white,
-        padding: SPACING.base,
-        borderRadius: BORDER_RADIUS.base,
+        padding: SPACING.md,
+        borderRadius: BORDER_RADIUS.md,
+        marginBottom: SPACING.sm,
         borderWidth: 1,
-        borderColor: COLORS.border,
+        borderColor: COLORS.borderLight,
+        ...SHADOWS.sm,
+    },
+    paymentOptionSelected: {
+        borderColor: COLORS.primary,
+
+    },
+    paymentRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    radio: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: COLORS.gray400,
+        marginRight: SPACING.md,
+    },
+    radioSelected: {
+        borderColor: COLORS.primary,
+        borderWidth: 6,
     },
     paymentText: {
         fontSize: TYPOGRAPHY.base,
+        fontWeight: '500',
         color: COLORS.textPrimary,
+    },
+    summaryContainer: {
+        backgroundColor: COLORS.white,
+        padding: SPACING.md,
+        borderRadius: BORDER_RADIUS.md,
+        ...SHADOWS.sm,
     },
     summaryRow: {
         flexDirection: 'row',
@@ -285,8 +283,8 @@ const styles = StyleSheet.create({
     },
     divider: {
         height: 1,
-        backgroundColor: COLORS.border,
-        marginVertical: SPACING.md,
+        backgroundColor: COLORS.borderLight,
+        marginVertical: SPACING.sm,
     },
     totalLabel: {
         fontSize: TYPOGRAPHY.lg,
@@ -298,11 +296,9 @@ const styles = StyleSheet.create({
         fontWeight: TYPOGRAPHY.bold,
         color: COLORS.primary,
     },
-    footer: {
-        backgroundColor: COLORS.white,
-        padding: LAYOUT.screenPadding,
-        borderTopWidth: 1,
-        borderTopColor: COLORS.borderLight,
+    placeOrderButton: {
+        marginTop: SPACING.md,
+        marginBottom: SPACING.xl,
     },
 });
 
